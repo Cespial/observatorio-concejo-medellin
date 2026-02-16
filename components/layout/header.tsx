@@ -49,6 +49,9 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
           <Button variant="outline" size="sm" className="hidden sm:flex" asChild>
             <Link href="/productos">Publicaciones</Link>
           </Button>
+          <Button variant="outline" size="sm" className="hidden sm:flex" asChild>
+            <Link href="/anexo-tecnico">Anexo Técnico</Link>
+          </Button>
         </div>
       </div>
     </header>

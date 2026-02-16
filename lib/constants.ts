@@ -10,6 +10,7 @@ import {
   FileText,
   BookOpen,
   Bot,
+  BookCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -54,6 +55,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Iniciativas", href: "/iniciativas", icon: FileText },
       { label: "Productos", href: "/productos", icon: BookOpen },
       { label: "Asistente IA", href: "/chat", icon: Bot, badge: "Beta" },
+      { label: "Anexo Técnico", href: "/anexo-tecnico", icon: BookCheck },
     ],
   },
 ];

@@ -96,6 +96,25 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["iniciativas"]["Row"], "id" | "created_at" | "updated_at">;
         Update: Partial<Database["public"]["Tables"]["iniciativas"]["Insert"]>;
       };
+      productos: {
+        Row: {
+          id: string;
+          titulo: string;
+          slug: string;
+          tipo: string;
+          descripcion: string;
+          contenido: string | null;
+          imagen_url: string | null;
+          archivo_url: string | null;
+          linea_tematica_id: string | null;
+          publicado: boolean;
+          fecha_publicacion: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["productos"]["Row"], "id" | "created_at" | "updated_at">;
+        Update: Partial<Database["public"]["Tables"]["productos"]["Insert"]>;
+      };
     };
     Views: Record<string, never>;
     Functions: {

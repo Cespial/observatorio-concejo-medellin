@@ -11,7 +11,7 @@ const footerLinks = {
   recursos: [
     { label: "Publicaciones", href: "/productos" },
     { label: "Datos Abiertos", href: "#" },
-    { label: "Metodologia", href: "#" },
+    { label: "Metodología", href: "/anexo-tecnico" },
     { label: "API", href: "#" },
   ],
   institucional: [

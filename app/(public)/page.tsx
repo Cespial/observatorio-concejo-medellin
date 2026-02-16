@@ -4,6 +4,8 @@ import { DashboardCardsSection } from "./_components/dashboard-cards-section";
 import { ProductsCarousel } from "./_components/products-carousel";
 import { CityPulseSection } from "./_components/city-pulse-section";
 import { AlliancesSection } from "./_components/alliances-section";
+import { MethodologySection } from "./_components/methodology-section";
+import { RecentInitiativesSection } from "./_components/recent-initiatives-section";
 
 export default function HomePage() {
   return (
@@ -13,6 +15,8 @@ export default function HomePage() {
       <DashboardCardsSection />
       <ProductsCarousel />
       <CityPulseSection />
+      <RecentInitiativesSection />
+      <MethodologySection />
       <AlliancesSection />
     </div>
   );
