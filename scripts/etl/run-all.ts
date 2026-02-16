@@ -1,32 +1,35 @@
+import { execSync } from "child_process";
 import { log, startTimer } from "./config";
 import type { ETLResult } from "./types";
 
-type PhaseRunner = {
+type Phase = {
   name: string;
-  module: string;
+  script: string;
 };
 
-const PHASES: PhaseRunner[] = [
-  { name: "GeoJSON Boundaries", module: "./fetch-geojson" },
-  { name: "Concejales", module: "./seed-concejales" },
-  { name: "Seguridad", module: "./seguridad/index" },
-  { name: "Educacion", module: "./educacion/index" },
-  { name: "Economia", module: "./economia/index" },
-  { name: "Movilidad", module: "./movilidad/index" },
-  { name: "Ambiente", module: "./ambiente/index" },
-  { name: "Salud", module: "./salud/index" },
-  { name: "Iniciativas", module: "./iniciativas/index" },
+const PHASES: Phase[] = [
+  { name: "GeoJSON Boundaries", script: "scripts/etl/fetch-geojson.ts" },
+  { name: "Concejales", script: "scripts/etl/seed-concejales.ts" },
+  { name: "Seguridad", script: "scripts/etl/seguridad/index.ts" },
+  { name: "Educacion", script: "scripts/etl/educacion/index.ts" },
+  { name: "Economia", script: "scripts/etl/economia/index.ts" },
+  { name: "Movilidad", script: "scripts/etl/movilidad/index.ts" },
+  { name: "Ambiente", script: "scripts/etl/ambiente/index.ts" },
+  { name: "Salud", script: "scripts/etl/salud/index.ts" },
+  { name: "Iniciativas", script: "scripts/etl/iniciativas/index.ts" },
 ];
 
-async function runPhase(phase: PhaseRunner): Promise<ETLResult> {
+function runPhase(phase: Phase): ETLResult {
   const phaseTimer = startTimer();
   log("info", `\n${"=".repeat(60)}`);
   log("info", `Starting phase: ${phase.name}`);
   log("info", "=".repeat(60));
 
   try {
-    // Dynamic import of the phase module
-    await import(phase.module);
+    execSync(`npx tsx ${phase.script}`, {
+      stdio: "inherit",
+      timeout: 120_000,
+    });
 
     return {
       phase: phase.name,
@@ -52,7 +55,7 @@ async function runPhase(phase: PhaseRunner): Promise<ETLResult> {
   }
 }
 
-async function main() {
+function main() {
   const totalTimer = startTimer();
   log("info", "");
   log("info", "╔══════════════════════════════════════════════════════════╗");
@@ -63,7 +66,7 @@ async function main() {
   const results: ETLResult[] = [];
 
   for (const phase of PHASES) {
-    const result = await runPhase(phase);
+    const result = runPhase(phase);
     results.push(result);
 
     if (!result.success) {
@@ -82,11 +85,6 @@ async function main() {
   for (const r of results) {
     const status = r.success ? "OK" : "FAIL";
     log("info", `  [${status}] ${r.phase} (${r.durationMs}ms)`);
-    if (r.errors.length > 0) {
-      for (const err of r.errors) {
-        log("error", `    -> ${err}`);
-      }
-    }
   }
 
   log("info", "");
@@ -98,7 +96,4 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  log("error", "ETL master run failed", err);
-  process.exit(1);
-});
+main();

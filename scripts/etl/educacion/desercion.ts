@@ -1,39 +1,45 @@
 import { log } from "../config";
-import { fetchSocrataAggregated } from "../socrata-client";
+import { fetchSocrata } from "../socrata-client";
 import { normalizePeriodo } from "../utils";
 import { loadIndicator } from "../load-indicators";
 import type { DataPoint } from "../types";
 
-const DATASET_ID = "4hft-bep7";
+const DATASET_ID = "nudc-7mev";
 
 export async function loadDesercionEscolar(): Promise<number> {
   log("info", "Loading desercion escolar from datos.gov.co...");
 
-  const raw = await fetchSocrataAggregated(DATASET_ID, {
-    select: "anio as periodo, avg(tasa_desercion) as tasa_promedio",
-    where: "municipio = 'MEDELLÍN' AND anio >= '2015'",
-    group: "anio",
-    order: "anio ASC",
+  const raw = await fetchSocrata(DATASET_ID, {
+    $select:
+      "a_o as periodo, deserci_n, deserci_n_primaria, deserci_n_secundaria, deserci_n_media",
+    $where: "municipio='Medell\u00edn'",
+    $order: "a_o ASC",
   });
 
   const points: DataPoint[] = raw
     .map((row) => ({
       periodo: normalizePeriodo(String(row.periodo)),
       territorio_codigo: "MDE",
-      valor: Math.round(Number(row.tasa_promedio) * 100) / 100,
+      valor: Math.round(Number(row.deserci_n) * 100) / 100,
+      metadata: {
+        desercion_primaria: Number(row.deserci_n_primaria) || null,
+        desercion_secundaria: Number(row.deserci_n_secundaria) || null,
+        desercion_media: Number(row.deserci_n_media) || null,
+      },
     }))
     .filter((dp) => !isNaN(dp.valor));
 
   return loadIndicator({
-    nombre: "Tasa de desercion escolar intra-anual",
+    nombre: "Tasa de desercion escolar",
     slug: "desercion-escolar",
-    descripcion: "Tasa promedio de desercion escolar intra-anual en Medellin",
+    descripcion:
+      "Tasa de desercion escolar en Medellin (primaria, secundaria y media)",
     unidad_medida: "%",
     periodicidad: "anual",
     linea_tematica_slug: "educacion",
     categoria_nombre: "Cobertura educativa",
     ficha_tecnica: {
-      fuente: "datos.gov.co",
+      fuente: "datos.gov.co - MEN Estadisticas en Educacion por Municipio",
       dataset_id: DATASET_ID,
       granularidad: "municipal",
     },

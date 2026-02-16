@@ -1,52 +1,45 @@
 import { log } from "../config";
-import { fetchSocrataAggregated } from "../socrata-client";
-import { normalizeComuna, normalizePeriodo, groupBy } from "../utils";
+import { fetchSocrata } from "../socrata-client";
 import { loadIndicator } from "../load-indicators";
 import type { DataPoint } from "../types";
 
-const DATASET_ID = "uaei-4agz";
+const DATASET_ID = "ntej-qq7v";
 
 export async function loadAccidentalidad(): Promise<number> {
   log("info", "Loading accidentalidad vial from datos.gov.co...");
 
-  const raw = await fetchSocrataAggregated(DATASET_ID, {
-    select: "anio as periodo, comuna, count(*) as total",
-    where: "municipio = 'MEDELLÍN' AND anio >= '2015'",
-    group: "anio, comuna",
+  const raw = await fetchSocrata(DATASET_ID, {
+    $select:
+      "date_extract_y(fecha_hecho) as periodo, sum(cantidad) as total",
+    $where:
+      "municipio='MEDELLIN' AND fecha_hecho>='2015-01-01T00:00:00.000'",
+    $group: "periodo",
+    $order: "periodo ASC",
   });
 
-  const points: DataPoint[] = [];
-  for (const row of raw) {
-    const periodo = normalizePeriodo(String(row.periodo));
-    const codigo = normalizeComuna(String(row.comuna ?? ""));
-    const valor = Number(row.total);
-
-    if (codigo && !isNaN(valor)) {
-      points.push({ periodo, territorio_codigo: codigo, valor });
-    }
-  }
-
-  // City-wide totals
-  const byYear = groupBy(points, "periodo" as keyof DataPoint);
-  const cityTotals: DataPoint[] = Object.entries(byYear).map(([periodo, rows]) => ({
-    periodo,
-    territorio_codigo: "MDE",
-    valor: rows.reduce((sum, r) => sum + r.valor, 0),
-  }));
+  const points: DataPoint[] = raw
+    .map((row) => ({
+      periodo: String(row.periodo),
+      territorio_codigo: "MDE",
+      valor: Number(row.total),
+    }))
+    .filter((dp) => !isNaN(dp.valor));
 
   return loadIndicator({
-    nombre: "Accidentes de transito",
-    slug: "accidentes-transito",
-    descripcion: "Accidentes de transito reportados por territorio y periodo",
+    nombre: "Accidentalidad vial",
+    slug: "accidentalidad-vial",
+    descripcion:
+      "Lesiones por accidentes de transito reportadas por la Policia Nacional en Medellin",
     unidad_medida: "casos",
     periodicidad: "anual",
     linea_tematica_slug: "movilidad",
     categoria_nombre: "Infraestructura vial",
     ficha_tecnica: {
-      fuente: "datos.gov.co",
+      fuente: "datos.gov.co - Policia Nacional",
       dataset_id: DATASET_ID,
-      metodologia: "Conteo de registros de accidentes viales agrupados por anio y comuna",
+      metodologia:
+        "Suma de lesiones por accidentes de transito agrupados por anio (LESIONES ACCIDENTES DE TRANSITO)",
     },
-    valores: [...points, ...cityTotals],
+    valores: points,
   });
 }

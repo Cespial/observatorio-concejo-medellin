@@ -1,7 +1,8 @@
 import * as dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 
-// Load .env from project root
+// Load .env.local first (Next.js convention), then .env as fallback
+dotenv.config({ path: ".env.local" });
 dotenv.config();
 
 // ── Env Validation ───────────────────────────────────────────

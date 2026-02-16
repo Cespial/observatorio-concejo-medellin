@@ -2,6 +2,8 @@ import { supabaseAdmin, log, startTimer } from "./config";
 
 // 21 Concejales de Medellin periodo 2024-2027
 // Curated from public records of concejodemedellin.gov.co
+// Names MUST match exactly the "autores" column in data/iniciativas-2024-2025.csv
+// (case-sensitive lookup by nombre in seed-from-csv.ts)
 const CONCEJALES = [
   { nombre: "Daniel Duque Velasquez", partido: "Centro Democratico" },
   { nombre: "Alfredo Ramos Maya", partido: "Centro Democratico" },
