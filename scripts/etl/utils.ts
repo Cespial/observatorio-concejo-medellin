@@ -238,7 +238,7 @@ export function computeVariation(
 
 export function computeTendencia(
   values: { periodo: string; valor: number }[]
-): "ascendente" | "descendente" | "estable" {
+): "alza" | "baja" | "estable" {
   if (values.length < 2) return "estable";
   const sorted = [...values].sort((a, b) => a.periodo.localeCompare(b.periodo));
   const recent = sorted.slice(-3);
@@ -247,7 +247,7 @@ export function computeTendencia(
     diffs.push(recent[i].valor - recent[i - 1].valor);
   }
   const avgDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
-  if (avgDiff > 0.5) return "ascendente";
-  if (avgDiff < -0.5) return "descendente";
+  if (avgDiff > 0.5) return "alza";
+  if (avgDiff < -0.5) return "baja";
   return "estable";
 }
