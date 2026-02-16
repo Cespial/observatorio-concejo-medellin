@@ -115,6 +115,74 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["productos"]["Row"], "id" | "created_at" | "updated_at">;
         Update: Partial<Database["public"]["Tables"]["productos"]["Insert"]>;
       };
+      autores_iniciativa: {
+        Row: {
+          id: string;
+          nombre: string;
+          cargo: string | null;
+          partido: string | null;
+          foto_url: string | null;
+          activo: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["autores_iniciativa"]["Row"], "id" | "created_at" | "updated_at">;
+        Update: Partial<Database["public"]["Tables"]["autores_iniciativa"]["Insert"]>;
+      };
+      iniciativas_autores: {
+        Row: {
+          iniciativa_id: string;
+          autor_id: string;
+          rol: string;
+        };
+        Insert: Database["public"]["Tables"]["iniciativas_autores"]["Row"];
+        Update: Partial<Database["public"]["Tables"]["iniciativas_autores"]["Insert"]>;
+      };
+      comisiones: {
+        Row: {
+          id: string;
+          nombre: string;
+          numero: number;
+          descripcion: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["comisiones"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["comisiones"]["Insert"]>;
+      };
+      fuentes_datos: {
+        Row: {
+          id: string;
+          nombre: string;
+          entidad: string | null;
+          url: string | null;
+          periodicidad: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["fuentes_datos"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["fuentes_datos"]["Insert"]>;
+      };
+      categorias_indicador: {
+        Row: {
+          id: string;
+          nombre: string;
+          linea_tematica_id: string;
+          orden: number;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["categorias_indicador"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["categorias_indicador"]["Insert"]>;
+      };
+      tags: {
+        Row: {
+          id: string;
+          nombre: string;
+          slug: string;
+          categoria: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["tags"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["tags"]["Insert"]>;
+      };
     };
     Views: Record<string, never>;
     Functions: {

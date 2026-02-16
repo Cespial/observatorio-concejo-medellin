@@ -1,37 +1,34 @@
 import { supabaseAdmin, log } from "./config";
+import { getTerritorioId, getLineaTematicaId, getCategoriaId, computeVariation, computeTendencia } from "./utils";
+import type { IndicatorPayload } from "./types";
 
-type IndicatorRow = {
-  nombre: string;
-  slug: string;
-  descripcion: string;
-  unidad_medida: string;
-  periodicidad: string;
-  linea_tematica_slug: string;
-  valores: { periodo: string; territorio_codigo: string; valor: number }[];
-};
-
-async function loadIndicator(row: IndicatorRow) {
-  const { data: linea } = await supabaseAdmin
-    .from("lineas_tematicas")
-    .select("id")
-    .eq("slug", row.linea_tematica_slug)
-    .single();
-
-  if (!linea) {
-    log("error", `Thematic line not found: ${row.linea_tematica_slug}`);
-    return;
+export async function loadIndicator(payload: IndicatorPayload): Promise<number> {
+  const lineaId = await getLineaTematicaId(payload.linea_tematica_slug);
+  if (!lineaId) {
+    log("error", `Thematic line not found: ${payload.linea_tematica_slug}`);
+    return 0;
   }
 
+  // Resolve optional category
+  let categoriaId: string | null = null;
+  if (payload.categoria_nombre) {
+    categoriaId = await getCategoriaId(payload.categoria_nombre);
+  }
+
+  // Upsert indicator
   const { data: indicador, error: indError } = await supabaseAdmin
     .from("indicadores")
     .upsert(
       {
-        nombre: row.nombre,
-        slug: row.slug,
-        descripcion: row.descripcion,
-        unidad_medida: row.unidad_medida,
-        periodicidad: row.periodicidad,
-        linea_tematica_id: linea.id,
+        nombre: payload.nombre,
+        slug: payload.slug,
+        descripcion: payload.descripcion,
+        unidad_medida: payload.unidad_medida,
+        periodicidad: payload.periodicidad,
+        linea_tematica_id: lineaId,
+        categoria_id: categoriaId,
+        ficha_tecnica: payload.ficha_tecnica ?? {},
+        activo: true,
       },
       { onConflict: "slug" }
     )
@@ -39,68 +36,69 @@ async function loadIndicator(row: IndicatorRow) {
     .single();
 
   if (indError || !indicador) {
-    log("error", `Failed to upsert indicator: ${row.nombre}`, indError);
-    return;
+    log("error", `Failed to upsert indicator: ${payload.nombre}`, indError?.message);
+    return 0;
   }
 
-  for (const val of row.valores) {
-    const { data: territorio } = await supabaseAdmin
-      .from("territorios")
-      .select("id")
-      .eq("codigo", val.territorio_codigo)
-      .single();
+  // Prepare data points
+  let inserted = 0;
+  const dataPoints: {
+    indicador_id: string;
+    territorio_id: string;
+    periodo: string;
+    valor: number;
+    metadata: Record<string, unknown> | null;
+  }[] = [];
 
-    if (!territorio) {
+  for (const val of payload.valores) {
+    const territorioId = await getTerritorioId(val.territorio_codigo);
+    if (!territorioId) {
       log("warn", `Territory not found: ${val.territorio_codigo}`);
       continue;
     }
-
-    const { error: dataError } = await supabaseAdmin.from("datos_indicador").upsert(
-      {
-        indicador_id: indicador.id,
-        territorio_id: territorio.id,
-        periodo: val.periodo,
-        valor: val.valor,
-      },
-      { onConflict: "indicador_id,territorio_id,periodo" }
-    );
-
-    if (dataError) log("error", `Failed data point: ${row.slug} / ${val.periodo}`, dataError);
+    dataPoints.push({
+      indicador_id: indicador.id,
+      territorio_id: territorioId,
+      periodo: val.periodo,
+      valor: val.valor,
+      metadata: val.metadata ?? null,
+    });
   }
 
-  const lastVal = row.valores[row.valores.length - 1];
-  if (lastVal) {
+  // Batch upsert data points
+  const BATCH_SIZE = 500;
+  for (let i = 0; i < dataPoints.length; i += BATCH_SIZE) {
+    const batch = dataPoints.slice(i, i + BATCH_SIZE);
+    const { error: dataError } = await supabaseAdmin
+      .from("datos_indicador")
+      .upsert(batch, { onConflict: "indicador_id,territorio_id,periodo" });
+
+    if (dataError) {
+      log("error", `Batch upsert error for ${payload.slug}`, dataError.message);
+    } else {
+      inserted += batch.length;
+    }
+  }
+
+  // Compute ultimo_valor, variacion_porcentual, tendencia from MDE data
+  const mdeVals = payload.valores
+    .filter((v) => v.territorio_codigo === "MDE")
+    .sort((a, b) => a.periodo.localeCompare(b.periodo));
+
+  if (mdeVals.length > 0) {
+    const lastVal = mdeVals[mdeVals.length - 1];
+    const prevVal = mdeVals.length > 1 ? mdeVals[mdeVals.length - 2] : null;
+
     await supabaseAdmin
       .from("indicadores")
-      .update({ ultimo_valor: lastVal.valor })
+      .update({
+        ultimo_valor: lastVal.valor,
+        variacion_porcentual: prevVal ? computeVariation(lastVal.valor, prevVal.valor) : null,
+        tendencia: computeTendencia(mdeVals),
+      })
       .eq("id", indicador.id);
   }
 
-  log("info", `Loaded indicator: ${row.nombre} (${row.valores.length} data points)`);
+  log("info", `Loaded indicator: ${payload.nombre} (${inserted} data points)`);
+  return inserted;
 }
-
-async function main() {
-  log("info", "Starting indicator load...");
-
-  const sampleIndicator: IndicatorRow = {
-    nombre: "Tasa de homicidios por 100.000 habitantes",
-    slug: "tasa-homicidios",
-    descripcion: "Numero de homicidios por cada 100.000 habitantes en el periodo",
-    unidad_medida: "por 100k hab",
-    periodicidad: "anual",
-    linea_tematica_slug: "seguridad",
-    valores: [
-      { periodo: "2020", territorio_codigo: "MDE", valor: 23.7 },
-      { periodo: "2021", territorio_codigo: "MDE", valor: 21.2 },
-      { periodo: "2022", territorio_codigo: "MDE", valor: 19.8 },
-      { periodo: "2023", territorio_codigo: "MDE", valor: 18.1 },
-      { periodo: "2024", territorio_codigo: "MDE", valor: 17.3 },
-      { periodo: "2025", territorio_codigo: "MDE", valor: 16.8 },
-    ],
-  };
-
-  await loadIndicator(sampleIndicator);
-  log("info", "Indicator load complete");
-}
-
-main().catch(console.error);

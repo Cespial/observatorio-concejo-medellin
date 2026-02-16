@@ -18,7 +18,7 @@ const ESTADO_COLORS: Record<string, string> = {
 
 const ESTADO_LABELS: Record<string, string> = {
   radicada: "Radicada",
-  en_comision: "En comisión",
+  en_comision: "En comision",
   primer_debate: "Primer debate",
   segundo_debate: "Segundo debate",
   aprobada: "Aprobada",
@@ -26,11 +26,11 @@ const ESTADO_LABELS: Record<string, string> = {
   retirada: "Retirada",
 };
 
-const RECENT_INITIATIVES = [
+const FALLBACK_INITIATIVES = [
   {
     id: "ini-001",
     radicado: "AC-2025-001",
-    titulo: "Acuerdo de seguridad alimentaria y nutricional para el Distrito de Medellín",
+    titulo: "Acuerdo de seguridad alimentaria y nutricional para el Distrito de Medellin",
     tipo: "acuerdo",
     estado: "segundo_debate",
     fecha: "2025-03-15",
@@ -39,7 +39,7 @@ const RECENT_INITIATIVES = [
   {
     id: "ini-002",
     radicado: "PR-2025-008",
-    titulo: "Proposición de control político sobre calidad del aire en el Valle de Aburrá",
+    titulo: "Proposicion de control politico sobre calidad del aire en el Valle de Aburra",
     tipo: "proposicion",
     estado: "en_comision",
     fecha: "2025-04-02",
@@ -48,7 +48,7 @@ const RECENT_INITIATIVES = [
   {
     id: "ini-003",
     radicado: "AC-2025-003",
-    titulo: "Acuerdo para la modernización del sistema integrado de transporte público",
+    titulo: "Acuerdo para la modernizacion del sistema integrado de transporte publico",
     tipo: "acuerdo",
     estado: "primer_debate",
     fecha: "2025-03-28",
@@ -57,22 +57,38 @@ const RECENT_INITIATIVES = [
   {
     id: "ini-004",
     radicado: "DB-2025-002",
-    titulo: "Debate de control sobre ejecución presupuestal del sector educación 2024",
+    titulo: "Debate de control sobre ejecucion presupuestal del sector educacion 2024",
     tipo: "debate",
     estado: "aprobada",
     fecha: "2025-02-20",
-    linea: "Educación",
+    linea: "Educacion",
   },
 ];
 
-export function RecentInitiativesSection() {
+type Initiative = {
+  id: string;
+  radicado: string;
+  titulo: string;
+  tipo: string;
+  estado: string;
+  fecha: string;
+  linea: string;
+};
+
+type Props = {
+  serverInitiatives?: Initiative[] | null;
+};
+
+export function RecentInitiativesSection({ serverInitiatives }: Props) {
+  const initiatives = serverInitiatives ?? FALLBACK_INITIATIVES;
+
   return (
     <section className="py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Últimas iniciativas
+              Ultimas iniciativas
             </h2>
             <p className="mt-1 text-muted-foreground">
               Seguimiento en tiempo real de la actividad legislativa del Concejo
@@ -87,7 +103,7 @@ export function RecentInitiativesSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {RECENT_INITIATIVES.map((initiative) => (
+          {initiatives.map((initiative) => (
             <Card key={initiative.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
@@ -97,8 +113,8 @@ export function RecentInitiativesSection() {
                     <span>•</span>
                     <span className="capitalize">{initiative.tipo}</span>
                   </div>
-                  <Badge className={ESTADO_COLORS[initiative.estado]} variant="secondary">
-                    {ESTADO_LABELS[initiative.estado]}
+                  <Badge className={ESTADO_COLORS[initiative.estado] ?? "bg-gray-100 text-gray-700"} variant="secondary">
+                    {ESTADO_LABELS[initiative.estado] ?? initiative.estado}
                   </Badge>
                 </div>
                 <CardTitle className="text-sm leading-snug">{initiative.titulo}</CardTitle>

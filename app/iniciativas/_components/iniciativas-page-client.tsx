@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { MOCK_INICIATIVAS } from "@/lib/mock-data/iniciativas";
-import { MOCK_AUTORES } from "@/lib/mock-data/autores";
+import { MOCK_INICIATIVAS, type InitiativeMock } from "@/lib/mock-data/iniciativas";
+import { MOCK_AUTORES, type AutorMock } from "@/lib/mock-data/autores";
 import { StatsSummary } from "./stats-summary";
 import { FilterBarIniciativas } from "./filter-bar-iniciativas";
 import { ViewToggle } from "./view-toggle";
@@ -13,7 +13,16 @@ import { InitiativeDetailDialog } from "./initiative-detail-dialog";
 
 type ViewMode = "table" | "kanban" | "timeline";
 
-export function IniciativasPageClient() {
+type Props = {
+  serverIniciativas?: InitiativeMock[];
+  serverAutores?: AutorMock[];
+};
+
+export function IniciativasPageClient({ serverIniciativas, serverAutores }: Props) {
+  // Use server data if available, fall back to mock
+  const allIniciativas = serverIniciativas ?? MOCK_INICIATIVAS;
+  const allAutores = serverAutores ?? MOCK_AUTORES;
+
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTipo, setSelectedTipo] = useState("todos");
@@ -33,7 +42,7 @@ export function IniciativasPageClient() {
 
   // Filter logic
   const filteredIniciativas = useMemo(() => {
-    let result = MOCK_INICIATIVAS;
+    let result = allIniciativas;
 
     // Search filter
     if (searchQuery.trim()) {
@@ -66,7 +75,7 @@ export function IniciativasPageClient() {
     }
 
     return result;
-  }, [searchQuery, selectedTipo, selectedEstado, selectedLinea, selectedComision]);
+  }, [allIniciativas, searchQuery, selectedTipo, selectedEstado, selectedLinea, selectedComision]);
 
   // Reset page when filters change
   const handleSearchChange = useCallback((v: string) => {
@@ -106,8 +115,8 @@ export function IniciativasPageClient() {
   }, []);
 
   const selectedInitiative = useMemo(
-    () => MOCK_INICIATIVAS.find((i) => i.id === selectedId) ?? null,
-    [selectedId]
+    () => allIniciativas.find((i) => i.id === selectedId) ?? null,
+    [allIniciativas, selectedId]
   );
 
   return (
@@ -140,7 +149,7 @@ export function IniciativasPageClient() {
         selectedComision={selectedComision}
         onComisionChange={handleComisionChange}
         filteredCount={filteredIniciativas.length}
-        totalCount={MOCK_INICIATIVAS.length}
+        totalCount={allIniciativas.length}
       />
 
       {/* View Toggle */}
@@ -167,7 +176,7 @@ export function IniciativasPageClient() {
       {viewMode === "kanban" && (
         <KanbanView
           iniciativas={filteredIniciativas}
-          autores={MOCK_AUTORES}
+          autores={allAutores}
           onSelect={handleSelectInitiative}
         />
       )}
@@ -182,7 +191,7 @@ export function IniciativasPageClient() {
       {/* Detail Dialog */}
       <InitiativeDetailDialog
         initiative={selectedInitiative}
-        autores={MOCK_AUTORES}
+        autores={allAutores}
         open={dialogOpen}
         onClose={handleCloseDialog}
       />

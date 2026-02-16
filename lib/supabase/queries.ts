@@ -159,3 +159,86 @@ export async function getTerritorioIndicadores(
   if (error) throw error;
   return (data ?? []) as DatoIndicadorRow[];
 }
+
+// ── Indicator Data by Linea Slug ─────────────────────────────
+
+type DbRow = Record<string, unknown>;
+
+export async function getIndicadoresByLineaSlug(lineaSlug: string) {
+  const supabase = createClient();
+
+  const { data: linea } = await (supabase
+    .from("lineas_tematicas")
+    .select("id")
+    .eq("slug", lineaSlug)
+    .single() as unknown as Promise<{ data: DbRow | null }>);
+
+  if (!linea) return [];
+
+  const { data, error } = await (supabase
+    .from("indicadores")
+    .select("*, datos_indicador(valor, periodo, territorio_id)")
+    .eq("linea_tematica_id", linea.id as string)
+    .eq("activo", true)
+    .order("nombre") as unknown as Promise<{ data: DbRow[] | null; error: unknown }>);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+// ── Latest values per indicator ──────────────────────────────
+
+export async function getLatestValues(indicadorId: string) {
+  const supabase = createClient();
+
+  const { data: latest } = await (supabase
+    .from("datos_indicador")
+    .select("periodo")
+    .eq("indicador_id", indicadorId)
+    .order("periodo", { ascending: false })
+    .limit(1) as unknown as Promise<{ data: DbRow[] | null }>);
+
+  if (!latest?.length) return [];
+
+  const { data, error } = await (supabase
+    .from("datos_indicador")
+    .select("*, territorios(nombre, codigo, tipo)")
+    .eq("indicador_id", indicadorId)
+    .eq("periodo", String(latest[0].periodo)) as unknown as Promise<{ data: DbRow[] | null; error: unknown }>);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+// ── Autores ──────────────────────────────────────────────────
+
+export async function getAutoresIniciativa() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("autores_iniciativa")
+    .select("*")
+    .eq("activo", true)
+    .order("nombre");
+  if (error) throw error;
+  return data ?? [];
+}
+
+// ── Data counts (for validation / landing page) ──────────────
+
+export async function getDataCounts() {
+  const supabase = createClient();
+
+  const [indicadores, datos, iniciativas, territorios] = await Promise.all([
+    supabase.from("indicadores").select("id", { count: "exact", head: true }).eq("activo", true),
+    supabase.from("datos_indicador").select("id", { count: "exact", head: true }),
+    supabase.from("iniciativas").select("id", { count: "exact", head: true }),
+    supabase.from("territorios").select("id", { count: "exact", head: true }),
+  ]);
+
+  return {
+    indicadores: indicadores.count ?? 0,
+    datos: datos.count ?? 0,
+    iniciativas: iniciativas.count ?? 0,
+    territorios: territorios.count ?? 0,
+  };
+}

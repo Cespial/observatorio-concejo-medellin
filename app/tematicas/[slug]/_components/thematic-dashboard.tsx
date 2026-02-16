@@ -4,6 +4,7 @@ import { getMockDataBySlug } from "@/lib/mock-data";
 import { THEMATIC_LINES } from "@/lib/constants";
 import { AlertCircle } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
+import type { ThematicMockData } from "@/lib/mock-data/types";
 
 import { HeaderSection } from "./header-section";
 import { KpiRow } from "./kpi-row";
@@ -18,10 +19,12 @@ import { RelatedInitiativesSection } from "./related-initiatives-section";
 
 type ThematicDashboardProps = {
   slug: string;
+  serverData?: ThematicMockData;
 };
 
-export function ThematicDashboard({ slug }: ThematicDashboardProps) {
-  const data = getMockDataBySlug(slug);
+export function ThematicDashboard({ slug, serverData }: ThematicDashboardProps) {
+  // Use server data if available, fall back to mock
+  const data = serverData ?? getMockDataBySlug(slug);
   const line = THEMATIC_LINES.find((l) => l.slug === slug);
 
   if (!data || !line) {

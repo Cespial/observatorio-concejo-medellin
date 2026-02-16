@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { THEMATIC_LINES } from "@/lib/constants";
+import { getThematicData } from "@/lib/services/indicadores";
 import { ThematicDashboard } from "./_components/thematic-dashboard";
 
 type Props = { params: { slug: string } };
@@ -14,8 +15,11 @@ export function generateMetadata({ params }: Props) {
   return { title: `${line.name} | Dashboard` };
 }
 
-export default function TematicaDetailPage({ params }: Props) {
+export default async function TematicaDetailPage({ params }: Props) {
   const line = THEMATIC_LINES.find((l) => l.slug === params.slug);
   if (!line) notFound();
-  return <ThematicDashboard slug={params.slug} />;
+
+  const data = await getThematicData(params.slug);
+
+  return <ThematicDashboard slug={params.slug} serverData={data} />;
 }
