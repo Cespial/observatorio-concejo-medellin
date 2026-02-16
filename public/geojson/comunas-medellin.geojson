@@ -1,0 +1,85 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM01", "nombre": "Popular", "numero": 1 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5375, 6.2930], [-75.5275, 6.2930], [-75.5275, 6.2830], [-75.5375, 6.2830], [-75.5375, 6.2930]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM02", "nombre": "Santa Cruz", "numero": 2 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5475, 6.2880], [-75.5375, 6.2880], [-75.5375, 6.2780], [-75.5475, 6.2780], [-75.5475, 6.2880]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM03", "nombre": "Manrique", "numero": 3 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5325, 6.2830], [-75.5225, 6.2830], [-75.5225, 6.2730], [-75.5325, 6.2730], [-75.5325, 6.2830]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM04", "nombre": "Aranjuez", "numero": 4 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5525, 6.2780], [-75.5425, 6.2780], [-75.5425, 6.2680], [-75.5525, 6.2680], [-75.5525, 6.2780]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM05", "nombre": "Castilla", "numero": 5 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5725, 6.2780], [-75.5625, 6.2780], [-75.5625, 6.2680], [-75.5725, 6.2680], [-75.5725, 6.2780]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM06", "nombre": "Doce de Octubre", "numero": 6 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5775, 6.2730], [-75.5675, 6.2730], [-75.5675, 6.2630], [-75.5775, 6.2630], [-75.5775, 6.2730]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM07", "nombre": "Robledo", "numero": 7 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5875, 6.2680], [-75.5725, 6.2680], [-75.5725, 6.2550], [-75.5875, 6.2550], [-75.5875, 6.2680]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM08", "nombre": "Villa Hermosa", "numero": 8 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5425, 6.2630], [-75.5325, 6.2630], [-75.5325, 6.2530], [-75.5425, 6.2530], [-75.5425, 6.2630]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM09", "nombre": "Buenos Aires", "numero": 9 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5525, 6.2530], [-75.5375, 6.2530], [-75.5375, 6.2430], [-75.5525, 6.2430], [-75.5525, 6.2530]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM10", "nombre": "La Candelaria", "numero": 10 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5675, 6.2580], [-75.5575, 6.2580], [-75.5575, 6.2480], [-75.5675, 6.2480], [-75.5675, 6.2580]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM11", "nombre": "Laureles-Estadio", "numero": 11 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5825, 6.2530], [-75.5675, 6.2530], [-75.5675, 6.2430], [-75.5825, 6.2430], [-75.5825, 6.2530]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM12", "nombre": "La América", "numero": 12 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5875, 6.2480], [-75.5775, 6.2480], [-75.5775, 6.2380], [-75.5875, 6.2380], [-75.5875, 6.2480]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM13", "nombre": "San Javier", "numero": 13 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5975, 6.2430], [-75.5825, 6.2430], [-75.5825, 6.2280], [-75.5975, 6.2280], [-75.5975, 6.2430]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM14", "nombre": "El Poblado", "numero": 14 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5625, 6.2430], [-75.5475, 6.2430], [-75.5475, 6.2180], [-75.5625, 6.2180], [-75.5625, 6.2430]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM15", "nombre": "Guayabal", "numero": 15 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5775, 6.2280], [-75.5625, 6.2280], [-75.5625, 6.2130], [-75.5775, 6.2130], [-75.5775, 6.2280]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "codigo": "COM16", "nombre": "Belén", "numero": 16 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-75.5925, 6.2330], [-75.5775, 6.2330], [-75.5775, 6.2180], [-75.5925, 6.2180], [-75.5925, 6.2330]]] }
+    }
+  ]
+}
