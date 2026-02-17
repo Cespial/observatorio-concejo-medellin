@@ -1,0 +1,225 @@
+{
+  "version": "1.0",
+  "updated": "2026-02-16",
+  "platforms": {
+    "datos_gov_co": {
+      "name": "datos.gov.co",
+      "base_url": "https://www.datos.gov.co/resource",
+      "api_type": "SOCRATA",
+      "auth": {
+        "token_env": "SOCRATA_APP_TOKEN",
+        "required": false,
+        "rate_limit_without": "1000/hr",
+        "rate_limit_with": "50000/hr"
+      }
+    },
+    "medata": {
+      "name": "MEData - Datos Abiertos Medellin",
+      "base_url": "https://medata.gov.co",
+      "api_type": "CKAN",
+      "auth": { "required": false }
+    },
+    "geomedellin": {
+      "name": "GeoMedellin ArcGIS Hub",
+      "base_url": "https://services1.arcgis.com/Qrk4Z5vQ94JXkdYM/arcgis/rest/services",
+      "api_type": "ArcGIS_REST",
+      "auth": { "required": false }
+    },
+    "metropol": {
+      "name": "Area Metropolitana del Valle de Aburra",
+      "base_url": "https://datosabiertos.metropol.gov.co",
+      "api_type": "CKAN",
+      "auth": { "required": false }
+    }
+  },
+  "datasets": {
+    "homicidios": {
+      "platform": "datos_gov_co",
+      "dataset_id": "m8fd-ahd9",
+      "name": "HOMICIDIO - Policia Nacional",
+      "linea_tematica": "seguridad",
+      "filter": "municipio='MEDELLIN'",
+      "select": "date_extract_y(fecha_hecho) as periodo, sum(cantidad) as total",
+      "group_by": "periodo",
+      "granularity": "municipal",
+      "indicators": ["homicidios-absoluto", "tasa-homicidios"],
+      "update_frequency": "continuous",
+      "status": "active"
+    },
+    "hurtos_personas": {
+      "platform": "datos_gov_co",
+      "dataset_id": "4rxi-8m8d",
+      "name": "HURTO PERSONAS - Policia Nacional",
+      "linea_tematica": "seguridad",
+      "filter": "municipio='MEDELLIN'",
+      "granularity": "municipal",
+      "indicators": ["hurtos-personas", "tasa-hurtos"],
+      "status": "active"
+    },
+    "violencia_intrafamiliar": {
+      "platform": "datos_gov_co",
+      "dataset_id": "ers2-kerr",
+      "name": "Violencia intrafamiliar - Medicina Legal",
+      "linea_tematica": "seguridad",
+      "filter": "municipio_del_hecho like '%MEDELL%'",
+      "granularity": "municipal",
+      "indicators": ["violencia-intrafamiliar"],
+      "status": "active"
+    },
+    "lesiones_personales": {
+      "platform": "datos_gov_co",
+      "dataset_id": "72sg-cybi",
+      "name": "Lesiones Personales - Policia Nacional",
+      "linea_tematica": "seguridad",
+      "filter": "municipio='MEDELLIN'",
+      "granularity": "municipal",
+      "indicators": ["lesiones-personales"],
+      "status": "active"
+    },
+    "extorsion": {
+      "platform": "datos_gov_co",
+      "dataset_id": "q2ib-t9am",
+      "name": "EXTORSION - Policia Nacional",
+      "linea_tematica": "seguridad",
+      "filter": "municipio='MEDELLIN'",
+      "granularity": "municipal",
+      "indicators": ["extorsion"],
+      "status": "active"
+    },
+    "delitos_sexuales": {
+      "platform": "datos_gov_co",
+      "dataset_id": "bz43-8ahq",
+      "name": "DELITOS SEXUALES - Policia Nacional",
+      "linea_tematica": "seguridad",
+      "filter": "municipio='MEDELLIN'",
+      "granularity": "municipal",
+      "indicators": ["delitos-sexuales"],
+      "status": "active"
+    },
+    "educacion_municipio": {
+      "platform": "datos_gov_co",
+      "dataset_id": "nudc-7mev",
+      "name": "MEN Estadisticas Educacion por Municipio",
+      "linea_tematica": "educacion",
+      "filter": "municipio='Medellín'",
+      "granularity": "municipal",
+      "indicators": ["cobertura-neta-educativa", "desercion-escolar"],
+      "status": "active"
+    },
+    "saber_11": {
+      "platform": "datos_gov_co",
+      "dataset_id": "kgxf-xxbe",
+      "name": "Resultados Saber 11",
+      "linea_tematica": "educacion",
+      "filter": "cole_mcpio_ubicacion='MEDELLÍN' OR cole_mcpio_ubicacion='MEDELLIN'",
+      "granularity": "per_school",
+      "indicators": ["puntaje-saber11-promedio"],
+      "status": "active"
+    },
+    "mortalidad_morbilidad": {
+      "platform": "datos_gov_co",
+      "dataset_id": "4e4i-ua65",
+      "name": "Indicadores mortalidad y morbilidad por municipio",
+      "linea_tematica": "salud",
+      "filter": "municipio like '%edell%'",
+      "granularity": "municipal",
+      "indicators": ["mortalidad-infantil", "mortalidad-materna", "mortalidad-neonatal", "bajo-peso-al-nacer", "cobertura-prenatal"],
+      "status": "active"
+    },
+    "vacunacion_antioquia": {
+      "platform": "datos_gov_co",
+      "dataset_id": "8u7u-645t",
+      "name": "Cobertura Vacunacion Municipios Antioquia",
+      "linea_tematica": "salud",
+      "filter": "nombremunicipio='Medellín'",
+      "granularity": "municipal",
+      "indicators": ["cobertura-vacunacion"],
+      "status": "active"
+    },
+    "accidentalidad_vial": {
+      "platform": "datos_gov_co",
+      "dataset_id": "ntej-qq7v",
+      "name": "LESIONES ACCIDENTES DE TRANSITO - Policia Nacional",
+      "linea_tematica": "movilidad",
+      "filter": "municipio='MEDELLIN'",
+      "granularity": "municipal",
+      "indicators": ["accidentalidad-vial"],
+      "status": "active"
+    },
+    "calidad_aire": {
+      "platform": "datos_gov_co",
+      "dataset_id": "kekd-7v7h",
+      "name": "Calidad Del Aire En Colombia (Promedio Anual) - AMVA",
+      "linea_tematica": "ambiente",
+      "columns": ["nombre_del_municipio", "variable", "a_o", "promedio", "estaci_n", "tiempo_de_exposici_n_horas"],
+      "filter": "nombre_del_municipio IN ('Medellín','MEDELLÍN','Medellin','MEDELLIN') AND variable='PM2.5' AND tiempo_de_exposici_n_horas='24'",
+      "granularity": "per_station",
+      "indicators": ["pm25-promedio"],
+      "status": "active"
+    },
+    "ecv_medellin": {
+      "platform": "medata",
+      "node_id": "16426",
+      "name": "Encuesta de Calidad de Vida - Medellin",
+      "linea_tematica": "cross_cutting",
+      "granularity": "per_comuna",
+      "indicators": ["Multiple per-comuna indicators across all 6 lines"],
+      "status": "new"
+    },
+    "poblacion_comunas": {
+      "platform": "medata",
+      "node_id": "41596",
+      "name": "Poblacion proyecciones 2018-2030 por comuna",
+      "linea_tematica": "cross_cutting",
+      "granularity": "per_comuna",
+      "indicators": ["Population denominators"],
+      "status": "new"
+    },
+    "incidentes_viales_medata": {
+      "platform": "medata",
+      "node_id": "16609",
+      "name": "Incidentes Viales Medellin",
+      "linea_tematica": "movilidad",
+      "granularity": "per_incident_geolocated",
+      "indicators": ["incidentes-viales-comuna"],
+      "status": "new"
+    },
+    "ipm_comunas": {
+      "platform": "medata",
+      "node_id": "41553",
+      "name": "Indice de Pobreza Multidimensional por comuna",
+      "linea_tematica": "economia",
+      "granularity": "per_comuna",
+      "indicators": ["ipm-multidimensional"],
+      "status": "new"
+    },
+    "comunas_boundaries": {
+      "platform": "geomedellin",
+      "service": "Limite_Comuna_Corregimiento/FeatureServer/0",
+      "name": "Limites Comunas y Corregimientos",
+      "granularity": "polygon",
+      "status": "active"
+    },
+    "aire_metropol": {
+      "platform": "metropol",
+      "node_id": "99",
+      "name": "Mediciones Estaciones Calidad del Aire",
+      "linea_tematica": "ambiente",
+      "granularity": "per_station",
+      "indicators": ["pm25-promedio-estacion"],
+      "status": "new"
+    }
+  },
+  "env_vars": {
+    "required": [
+      { "name": "NEXT_PUBLIC_SUPABASE_URL", "description": "Supabase project URL" },
+      { "name": "SUPABASE_SERVICE_ROLE_KEY", "description": "Supabase service role key for admin operations" },
+      { "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY", "description": "Supabase anonymous key for client-side reads" }
+    ],
+    "optional": [
+      { "name": "SOCRATA_APP_TOKEN", "description": "datos.gov.co app token — increases rate limit from 1k/hr to 50k/hr" },
+      { "name": "NEXT_PUBLIC_MAPBOX_TOKEN", "description": "Mapbox GL JS access token for map rendering" },
+      { "name": "CLAUDE_API_KEY", "description": "Anthropic API key for chat assistant" }
+    ]
+  }
+}

@@ -7,17 +7,21 @@ import { AlliancesSection } from "./_components/alliances-section";
 import { MethodologySection } from "./_components/methodology-section";
 import { RecentInitiativesSection } from "./_components/recent-initiatives-section";
 import { getRecentIniciativas } from "@/lib/services/iniciativas";
+import { getLandingPageData } from "@/lib/services/landing";
 
 export default async function HomePage() {
-  const recentInitiatives = await getRecentIniciativas(4);
+  const [recentInitiatives, landingData] = await Promise.all([
+    getRecentIniciativas(4),
+    getLandingPageData(),
+  ]);
 
   return (
     <div className="min-w-0">
       <HeroSection />
-      <TickerSection />
-      <DashboardCardsSection />
+      <TickerSection serverData={landingData.tickerItems} />
+      <DashboardCardsSection serverData={landingData.dashboardCards} />
       <ProductsCarousel />
-      <CityPulseSection />
+      <CityPulseSection serverChoroplethData={landingData.choroplethData} />
       <RecentInitiativesSection serverInitiatives={recentInitiatives} />
       <MethodologySection />
       <AlliancesSection />

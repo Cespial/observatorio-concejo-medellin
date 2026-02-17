@@ -1,36 +1,35 @@
 import { log } from "../config";
+import { fetchSocrata } from "../socrata-client";
 import { loadIndicator } from "../load-indicators";
 import type { DataPoint } from "../types";
 
-/**
- * Pre-aggregated lesiones personales data for Medellin.
- * Sources: Policia Nacional / SIEDCO, Secretaria de Seguridad de Medellin.
- * These are realistic annual case counts for the city.
- */
-const LESIONES_DATA: Record<string, number> = {
-  "2015": 7823,
-  "2016": 7456,
-  "2017": 7189,
-  "2018": 7342,
-  "2019": 7518,
-  "2020": 5234, // Pandemic year - significant drop due to lockdowns
-  "2021": 6187,
-  "2022": 6845,
-  "2023": 7102,
-  "2024": 6978,
-  "2025": 6850,
-};
+const DATASET_ID = "72sg-cybi"; // Lesiones Personales - Policia Nacional
 
 export async function loadLesionesPersonales(): Promise<number> {
-  log("info", "Loading lesiones personales (pre-aggregated data)...");
+  log("info", "Loading lesiones personales from datos.gov.co (Policia Nacional)...");
 
-  const valores: DataPoint[] = Object.entries(LESIONES_DATA).map(([periodo, valor]) => ({
-    periodo,
-    territorio_codigo: "MDE",
-    valor,
-  }));
+  // fecha_hecho is text "DD/MM/YYYY" → use substring(fecha_hecho, 7, 4) for year
+  // cantidad is text → use count(*) instead of sum(cantidad)
+  // municipio value is "Medellín (CT)" → use LIKE filter
+  const raw = await fetchSocrata(DATASET_ID, {
+    $select: "substring(fecha_hecho, 7, 4) as anio, count(*) as total",
+    $where: "municipio like '%edell%'",
+    $group: "anio",
+    $order: "anio ASC",
+  });
 
-  log("info", `Prepared ${valores.length} year records for lesiones personales`);
+  const valores: DataPoint[] = raw
+    .filter((row) => {
+      const year = Number(row.anio);
+      return row.anio != null && row.total != null && year >= 2010 && year <= 2030;
+    })
+    .map((row) => ({
+      periodo: String(row.anio),
+      territorio_codigo: "MDE",
+      valor: Number(row.total),
+    }));
+
+  log("info", `Parsed ${valores.length} year records for lesiones personales`);
 
   return loadIndicator({
     nombre: "Lesiones personales",
@@ -41,8 +40,9 @@ export async function loadLesionesPersonales(): Promise<number> {
     linea_tematica_slug: "seguridad",
     categoria_nombre: "Convivencia ciudadana",
     ficha_tecnica: {
-      fuente: "Policia Nacional / SIEDCO - Secretaria de Seguridad de Medellin",
-      metodologia: "Conteo anual de casos de lesiones personales reportados en Medellin. Datos pre-agregados.",
+      fuente: "datos.gov.co - Policia Nacional",
+      dataset_id: DATASET_ID,
+      metodologia: "Conteo de registros de lesiones personales agrupados por anio, municipio LIKE '%edell%' (Medellín (CT))",
     },
     valores,
   });

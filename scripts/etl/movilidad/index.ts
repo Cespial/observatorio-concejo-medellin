@@ -2,6 +2,7 @@ import { log, startTimer } from "../config";
 import { clearTerritoryCache } from "../utils";
 import { loadPasajerosMetro } from "./metro";
 import { loadAccidentalidad } from "./accidentalidad";
+import { loadIncidentesVialesMedata } from "./incidentes-viales-medata";
 
 async function main() {
   const elapsed = startTimer();
@@ -13,6 +14,7 @@ async function main() {
   const loaders = [
     { name: "Pasajeros Metro", fn: loadPasajerosMetro },
     { name: "Accidentalidad", fn: loadAccidentalidad },
+    { name: "Incidentes Viales per-comuna", fn: loadIncidentesVialesMedata },
   ];
 
   for (const loader of loaders) {

@@ -44,9 +44,87 @@ export async function getComunasWithIndicators(): Promise<{
 }
 
 export async function getMapIndicatorData(): Promise<MapIndicatorData[]> {
-  // For now return mock data — real data requires complex joins
-  // This can be enhanced when real indicator data is loaded
-  return MAP_INDICATORS_DATA;
+  try {
+    const supabase = createClient();
+
+    // Get all active indicators that have per-comuna data
+    const { data: indicadoresRaw } = await (supabase
+      .from("indicadores")
+      .select("id, slug")
+      .eq("activo", true) as unknown as Promise<{ data: DbRow[] | null }>);
+
+    if (!indicadoresRaw?.length) return MAP_INDICATORS_DATA;
+
+    // Get all comunas and corregimientos
+    const { data: territoriosRaw } = await (supabase
+      .from("territorios")
+      .select("id, codigo")
+      .in("tipo", ["comuna", "corregimiento"]) as unknown as Promise<{ data: DbRow[] | null }>);
+
+    if (!territoriosRaw?.length) return MAP_INDICATORS_DATA;
+
+    const territorioIds = territoriosRaw.map((t) => String(t.id));
+    const territorioMap = new Map(
+      territoriosRaw.map((t) => [
+        String(t.id),
+        String(t.codigo).replace("COM", "").replace("COR", ""),
+      ])
+    );
+
+    // Map indicator slugs to the map indicator keys
+    const slugToMapKey: Record<string, string> = {
+      "tasa-homicidios": "homicidios_tasa",
+      "homicidios-absoluto": "homicidios_tasa",
+      "hurtos-personas": "hurtos_total",
+      "cobertura-neta-educativa": "cobertura_educativa",
+      "tasa-desempleo": "desempleo",
+      "pm25-promedio": "pm25",
+      "pm25-promedio-estacion": "pm25",
+      "accidentalidad-vial": "accidentes",
+      "incidentes-viales-comuna": "accidentes",
+      "cobertura-vacunacion": "vacunacion",
+      "satisfaccion-transporte-comuna": "satisfaccion_transporte",
+    };
+
+    // Fetch per-comuna data for the last 3 years
+    const { data: datosRaw } = await (supabase
+      .from("datos_indicador")
+      .select("indicador_id, territorio_id, periodo, valor")
+      .in("territorio_id", territorioIds)
+      .gte("periodo", "2023")
+      .order("periodo", { ascending: true }) as unknown as Promise<{ data: DbRow[] | null }>);
+
+    if (!datosRaw?.length) return MAP_INDICATORS_DATA;
+
+    const indicadorMap = new Map(
+      indicadoresRaw.map((ind) => [String(ind.id), String(ind.slug)])
+    );
+
+    const realData: MapIndicatorData[] = [];
+
+    for (const dato of datosRaw) {
+      const slug = indicadorMap.get(String(dato.indicador_id));
+      if (!slug) continue;
+
+      const mapKey = slugToMapKey[slug];
+      if (!mapKey) continue;
+
+      const territorioCodigo = territorioMap.get(String(dato.territorio_id));
+      if (!territorioCodigo) continue;
+
+      realData.push({
+        territorio_codigo: territorioCodigo,
+        indicador: mapKey,
+        year: Number(String(dato.periodo).slice(0, 4)),
+        valor: Number(dato.valor),
+      });
+    }
+
+    // If we got real data, use it; otherwise fall back to mock
+    return realData.length > 0 ? realData : MAP_INDICATORS_DATA;
+  } catch {
+    return MAP_INDICATORS_DATA;
+  }
 }
 
 export async function getComunaDetail(codigo: string) {

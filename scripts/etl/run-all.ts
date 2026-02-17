@@ -17,6 +17,8 @@ const PHASES: Phase[] = [
   { name: "Ambiente", script: "scripts/etl/ambiente/index.ts" },
   { name: "Salud", script: "scripts/etl/salud/index.ts" },
   { name: "Iniciativas", script: "scripts/etl/iniciativas/index.ts" },
+  { name: "Poblacion Comunas", script: "scripts/etl/poblacion-comunas.ts" },
+  { name: "ECV per-comuna", script: "scripts/etl/ecv/index.ts" },
 ];
 
 function runPhase(phase: Phase): ETLResult {

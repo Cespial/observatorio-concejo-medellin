@@ -11,7 +11,7 @@ async function main() {
   const errors: string[] = [];
 
   const loaders = [
-    { name: "Mortalidad Infantil", fn: loadMortalidadInfantil },
+    { name: "Mortalidad (multiple indicators)", fn: loadMortalidadInfantil },
     { name: "Vacunacion", fn: loadVacunacion },
   ];
 

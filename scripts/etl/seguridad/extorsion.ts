@@ -3,15 +3,14 @@ import { fetchSocrata } from "../socrata-client";
 import { loadIndicator } from "../load-indicators";
 import type { DataPoint } from "../types";
 
-const DATASET_ID = "ers2-kerr"; // Violencia intrafamiliar - Medicina Legal
+const DATASET_ID = "q2ib-t9am"; // EXTORSION - Policia Nacional
 
-export async function loadViolenciaIntrafamiliar(): Promise<number> {
-  log("info", "Loading violencia intrafamiliar from datos.gov.co (Medicina Legal)...");
+export async function loadExtorsion(): Promise<number> {
+  log("info", "Loading extorsion from datos.gov.co (Policia Nacional)...");
 
-  // Column is municipio_del_hecho_dane (not municipio_del_hecho), value is "Medellín" (with accent)
   const raw = await fetchSocrata(DATASET_ID, {
-    $select: "a_o_del_hecho as periodo, count(*) as total",
-    $where: "municipio_del_hecho_dane='Medellín' AND a_o_del_hecho >= '2015'",
+    $select: "date_extract_y(fecha_hecho) as periodo, sum(cantidad) as total",
+    $where: "municipio='MEDELLIN' AND fecha_hecho>='2015-01-01T00:00:00.000'",
     $group: "periodo",
     $order: "periodo ASC",
   });
@@ -24,14 +23,14 @@ export async function loadViolenciaIntrafamiliar(): Promise<number> {
       valor: Number(row.total),
     }));
 
-  log("info", `Parsed ${valores.length} year records for violencia intrafamiliar`);
+  log("info", `Parsed ${valores.length} year records for extorsion`);
 
   if (valores.length === 0) {
-    log("warn", "No data returned for VIF — trying alternative filter...");
+    log("warn", "No data from primary query, trying alternative column names...");
 
     const rawAlt = await fetchSocrata(DATASET_ID, {
-      $select: "a_o_del_hecho as periodo, count(*) as total",
-      $where: "municipio_del_hecho_dane like '%edell%' AND a_o_del_hecho >= '2015'",
+      $select: "anio as periodo, sum(cantidad) as total",
+      $where: "municipio='MEDELLIN'",
       $group: "periodo",
       $order: "periodo ASC",
     });
@@ -50,17 +49,17 @@ export async function loadViolenciaIntrafamiliar(): Promise<number> {
   }
 
   return loadIndicator({
-    nombre: "Violencia intrafamiliar",
-    slug: "violencia-intrafamiliar",
-    descripcion: "Casos de violencia intrafamiliar reportados en Medellin por periodo",
+    nombre: "Extorsion",
+    slug: "extorsion",
+    descripcion: "Casos de extorsion reportados en Medellin por periodo",
     unidad_medida: "casos",
     periodicidad: "anual",
     linea_tematica_slug: "seguridad",
-    categoria_nombre: "Convivencia ciudadana",
+    categoria_nombre: "Delitos contra el patrimonio",
     ficha_tecnica: {
-      fuente: "datos.gov.co - Medicina Legal",
+      fuente: "datos.gov.co - Policia Nacional",
       dataset_id: DATASET_ID,
-      metodologia: "Conteo anual de casos de VIF donde municipio_del_hecho_dane='Medellín'",
+      metodologia: "Suma de cantidad de extorsiones agrupadas por anio, filtrado por municipio MEDELLIN",
     },
     valores,
   });

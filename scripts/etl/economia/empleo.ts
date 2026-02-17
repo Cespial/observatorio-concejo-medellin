@@ -3,8 +3,9 @@ import { loadIndicator } from "../load-indicators";
 import type { DataPoint } from "../types";
 
 // DANE GEIH: unemployment data for Medellin metro area
-// No direct SOCRATA dataset — use pre-aggregated values from DANE reports
-// These are real historical values from DANE GEIH for Medellin AM
+// No direct SOCRATA API available — DANE publishes GEIH as PDF/Excel reports.
+// These are real historical values from DANE GEIH for Medellin AM.
+// NOTE: These remain pre-aggregated until DANE provides an API endpoint.
 const DESEMPLEO_ANUAL: { periodo: string; valor: number }[] = [
   { periodo: "2015", valor: 10.6 },
   { periodo: "2016", valor: 10.7 },

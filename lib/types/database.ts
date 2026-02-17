@@ -183,6 +183,72 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["tags"]["Row"], "id" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["tags"]["Insert"]>;
       };
+      productos_visualizaciones: {
+        Row: {
+          id: string;
+          producto_id: string;
+          tipo: string;
+          titulo: string;
+          configuracion: Json;
+          orden: number;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["productos_visualizaciones"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["productos_visualizaciones"]["Insert"]>;
+      };
+      aliados: {
+        Row: {
+          id: string;
+          nombre: string;
+          logo_url: string | null;
+          url: string | null;
+          descripcion: string | null;
+          orden: number;
+          activo: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["aliados"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["aliados"]["Insert"]>;
+      };
+      alertas: {
+        Row: {
+          id: string;
+          indicador_id: string;
+          territorio_id: string | null;
+          tipo: string;
+          mensaje: string;
+          umbral: number | null;
+          valor_actual: number | null;
+          activa: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["alertas"]["Row"], "id" | "created_at" | "updated_at">;
+        Update: Partial<Database["public"]["Tables"]["alertas"]["Insert"]>;
+      };
+      documentos_embeddings: {
+        Row: {
+          id: string;
+          contenido: string;
+          metadata: Json;
+          embedding: number[];
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["documentos_embeddings"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["documentos_embeddings"]["Insert"]>;
+      };
+      poblacion_anual: {
+        Row: {
+          id: string;
+          territorio_id: string;
+          anio: number;
+          poblacion: number;
+          fuente: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["poblacion_anual"]["Row"], "id" | "created_at">;
+        Update: Partial<Database["public"]["Tables"]["poblacion_anual"]["Insert"]>;
+      };
     };
     Views: Record<string, never>;
     Functions: {

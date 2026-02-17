@@ -4,11 +4,17 @@ import { ThemeCard } from "./theme-card";
 import { SectionWrapper } from "@/components/shared/section-wrapper";
 import { THEMATIC_LINES } from "@/lib/constants";
 
-const mockData: Record<string, {
+type LineData = {
   mainKpi: { label: string; value: number; unit: string; change: number; positiveIsGood: boolean };
   sparkline: number[];
   count: number;
-}> = {
+};
+
+type DashboardCardsSectionProps = {
+  serverData?: Record<string, LineData>;
+};
+
+const fallbackData: Record<string, LineData> = {
   seguridad: {
     mainKpi: { label: "Tasa de homicidios", value: 16.8, unit: "por 100k", change: -12.3, positiveIsGood: false },
     sparkline: [25, 23, 21, 19, 18, 17.5, 17, 16.8],
@@ -41,7 +47,9 @@ const mockData: Record<string, {
   },
 };
 
-export function DashboardCardsSection() {
+export function DashboardCardsSection({ serverData }: DashboardCardsSectionProps) {
+  const dataMap = serverData ?? fallbackData;
+
   return (
     <SectionWrapper>
       <div className="mb-8">
@@ -53,7 +61,8 @@ export function DashboardCardsSection() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {THEMATIC_LINES.map((line) => {
-          const data = mockData[line.slug];
+          const data = dataMap[line.slug] ?? fallbackData[line.slug];
+          if (!data) return null;
           return (
             <ThemeCard
               key={line.slug}

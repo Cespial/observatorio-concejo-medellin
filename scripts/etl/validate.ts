@@ -81,6 +81,87 @@ async function main() {
     log("info", `  INFO  Data range: ${dateRange[0].periodo} to ${dateRangeMax[0].periodo}`);
   }
 
+  // Check per-comuna data coverage
+  log("info", "\n--- Per-Comuna Data Coverage ---\n");
+
+  const { data: comunas } = await supabaseAdmin
+    .from("territorios")
+    .select("id, nombre, codigo")
+    .eq("tipo", "comuna")
+    .order("codigo");
+
+  if (comunas?.length) {
+    const comunaIds = comunas.map((c) => c.id);
+
+    const { count: perComunaCount } = await supabaseAdmin
+      .from("datos_indicador")
+      .select("id", { count: "exact", head: true })
+      .in("territorio_id", comunaIds);
+
+    if ((perComunaCount ?? 0) > 0) {
+      log("info", `  PASS  Per-comuna data: ${perComunaCount} data points across ${comunas.length} comunas`);
+      passed++;
+
+      // Check how many comunas have data
+      const comunasWithData = new Set<string>();
+      const { data: comunaDatos } = await supabaseAdmin
+        .from("datos_indicador")
+        .select("territorio_id")
+        .in("territorio_id", comunaIds)
+        .limit(1000);
+
+      for (const d of comunaDatos ?? []) {
+        comunasWithData.add(d.territorio_id);
+      }
+
+      log("info", `  INFO  ${comunasWithData.size}/${comunas.length} comunas have indicator data`);
+    } else {
+      log("warn", `  WARN  No per-comuna data found (only city-level MDE data)`);
+    }
+  }
+
+  // Check data source freshness
+  log("info", "\n--- Data Source Freshness ---\n");
+
+  const { data: indicators } = await supabaseAdmin
+    .from("indicadores")
+    .select("slug, nombre, ficha_tecnica, updated_at")
+    .eq("activo", true)
+    .order("updated_at", { ascending: true });
+
+  if (indicators?.length) {
+    const now = new Date();
+    for (const ind of indicators) {
+      const updatedAt = new Date(ind.updated_at);
+      const daysSinceUpdate = Math.floor((now.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24));
+      const ficha = ind.ficha_tecnica as Record<string, unknown> | null;
+      const source = ficha?.fuente ? String(ficha.fuente).slice(0, 40) : "unknown";
+      const datasetId = ficha?.dataset_id ? ` [${ficha.dataset_id}]` : "";
+
+      if (daysSinceUpdate > 30) {
+        log("warn", `  STALE ${ind.slug}: updated ${daysSinceUpdate}d ago — ${source}${datasetId}`);
+      } else {
+        log("info", `  FRESH ${ind.slug}: updated ${daysSinceUpdate}d ago — ${source}${datasetId}`);
+      }
+    }
+  }
+
+  // Check fuente_datos linkage
+  log("info", "\n--- Fuente Datos Linkage ---\n");
+
+  const { data: unlinkedIndicators } = await supabaseAdmin
+    .from("indicadores")
+    .select("slug")
+    .eq("activo", true)
+    .is("fuente_datos_id", null);
+
+  if (unlinkedIndicators?.length) {
+    log("warn", `  WARN  ${unlinkedIndicators.length} indicators without fuente_datos link: ${unlinkedIndicators.map((i) => i.slug).join(", ")}`);
+  } else {
+    log("info", "  PASS  All active indicators have fuente_datos_id linked");
+    passed++;
+  }
+
   // Summary
   log("info", `\n${"=".repeat(50)}`);
   log("info", `Validation complete: ${passed} passed, ${failed} failed`);

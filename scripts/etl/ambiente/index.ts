@@ -2,6 +2,7 @@ import { log, startTimer } from "../config";
 import { clearTerritoryCache } from "../utils";
 import { loadCalidadAire } from "./calidad-aire";
 import { loadAreasVerdes } from "./areas-verdes";
+import { loadCalidadAireEstaciones } from "./calidad-aire-estaciones";
 
 async function main() {
   const elapsed = startTimer();
@@ -13,6 +14,7 @@ async function main() {
   const loaders = [
     { name: "Calidad del Aire PM2.5", fn: loadCalidadAire },
     { name: "Areas Verdes", fn: loadAreasVerdes },
+    { name: "Calidad Aire Estaciones per-comuna", fn: loadCalidadAireEstaciones },
   ];
 
   for (const loader of loaders) {

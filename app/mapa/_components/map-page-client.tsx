@@ -11,7 +11,9 @@ import { ComparisonMode } from "./comparison-mode";
 import {
   MAP_INDICATORS_DATA,
   MAP_INDICATOR_OPTIONS,
+  type MapIndicatorOption,
 } from "@/lib/mock-data/map-indicators";
+import type { MapIndicatorData } from "@/lib/mock-data/types";
 
 const MapContainer = dynamic(() => import("./map-container"), {
   ssr: false,
@@ -25,7 +27,23 @@ const MapContainer = dynamic(() => import("./map-container"), {
   ),
 });
 
-export function MapPageClient() {
+type MapPageClientProps = {
+  serverIndicatorData?: MapIndicatorData[];
+  serverIndicatorOptions?: MapIndicatorOption[];
+};
+
+export function MapPageClient({
+  serverIndicatorData,
+  serverIndicatorOptions,
+}: MapPageClientProps) {
+  // Use server data if available, fall back to mock
+  const indicatorData = serverIndicatorData?.length
+    ? serverIndicatorData
+    : MAP_INDICATORS_DATA;
+  const indicatorOptions = serverIndicatorOptions?.length
+    ? serverIndicatorOptions
+    : MAP_INDICATOR_OPTIONS;
+
   const [selectedIndicator, setSelectedIndicator] = useState("homicidios_tasa");
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedComuna, setSelectedComuna] = useState<string | null>(null);
@@ -34,12 +52,12 @@ export function MapPageClient() {
   );
   const [comparisonComuna, setComparisonComuna] = useState<string | null>(null);
 
-  const currentIndicatorOption = MAP_INDICATOR_OPTIONS.find(
+  const currentIndicatorOption = indicatorOptions.find(
     (opt) => opt.value === selectedIndicator
   );
 
   // Get min/max for current indicator + year (for legend)
-  const currentValues = MAP_INDICATORS_DATA.filter(
+  const currentValues = indicatorData.filter(
     (d) => d.indicador === selectedIndicator && d.year === selectedYear
   ).map((d) => d.valor);
 

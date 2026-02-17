@@ -1,5 +1,5 @@
 import { supabaseAdmin, log } from "./config";
-import { getTerritorioId, getLineaTematicaId, getCategoriaId, computeVariation, computeTendencia } from "./utils";
+import { getTerritorioId, getLineaTematicaId, getCategoriaId, getFuenteDatosId, computeVariation, computeTendencia } from "./utils";
 import type { IndicatorPayload } from "./types";
 
 export async function loadIndicator(payload: IndicatorPayload): Promise<number> {
@@ -15,6 +15,14 @@ export async function loadIndicator(payload: IndicatorPayload): Promise<number> 
     categoriaId = await getCategoriaId(payload.categoria_nombre);
   }
 
+  // Resolve optional fuente_datos
+  let fuenteDatosId: string | null = null;
+  if (payload.fuente_nombre) {
+    fuenteDatosId = await getFuenteDatosId(payload.fuente_nombre);
+  } else if (payload.ficha_tecnica?.fuente) {
+    fuenteDatosId = await getFuenteDatosId(String(payload.ficha_tecnica.fuente));
+  }
+
   // Upsert indicator
   const { data: indicador, error: indError } = await supabaseAdmin
     .from("indicadores")
@@ -27,6 +35,7 @@ export async function loadIndicator(payload: IndicatorPayload): Promise<number> 
         periodicidad: payload.periodicidad,
         linea_tematica_id: lineaId,
         categoria_id: categoriaId,
+        fuente_datos_id: fuenteDatosId,
         ficha_tecnica: payload.ficha_tecnica ?? {},
         activo: true,
       },

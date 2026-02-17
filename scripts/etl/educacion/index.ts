@@ -2,6 +2,7 @@ import { log, startTimer } from "../config";
 import { clearTerritoryCache } from "../utils";
 import { loadCoberturaEducativa } from "./cobertura";
 import { loadDesercionEscolar } from "./desercion";
+import { loadSaber11 } from "./saber11";
 
 async function main() {
   const elapsed = startTimer();
@@ -13,6 +14,7 @@ async function main() {
   const loaders = [
     { name: "Cobertura Educativa", fn: loadCoberturaEducativa },
     { name: "Desercion Escolar", fn: loadDesercionEscolar },
+    { name: "Saber 11", fn: loadSaber11 },
   ];
 
   for (const loader of loaders) {

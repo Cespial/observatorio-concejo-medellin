@@ -16,6 +16,8 @@
     "etl:ambiente": "tsx scripts/etl/ambiente/index.ts",
     "etl:salud": "tsx scripts/etl/salud/index.ts",
     "etl:iniciativas": "tsx scripts/etl/iniciativas/index.ts",
+    "etl:poblacion": "tsx scripts/etl/poblacion-comunas.ts",
+    "etl:ecv": "tsx scripts/etl/ecv/index.ts",
     "etl:all": "tsx scripts/etl/run-all.ts",
     "etl:validate": "tsx scripts/etl/validate.ts"
   },

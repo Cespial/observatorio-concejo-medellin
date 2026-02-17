@@ -16,7 +16,7 @@ const indicators = [
   { value: "cobertura_edu", label: "Cobertura educativa" },
 ];
 
-const baseChoropleth: ChoroplethDatum[] = [
+const fallbackChoropleth: ChoroplethDatum[] = [
   { codigo: "COM01", nombre: "Popular", valor: 32.1 },
   { codigo: "COM02", nombre: "Santa Cruz", valor: 28.4 },
   { codigo: "COM03", nombre: "Manrique", valor: 25.7 },
@@ -35,18 +35,23 @@ const baseChoropleth: ChoroplethDatum[] = [
   { codigo: "COM16", nombre: "Belen", valor: 9.7 },
 ];
 
-const mockChoropleth: Record<string, ChoroplethDatum[]> = {
-  homicidios: baseChoropleth,
-  desempleo: baseChoropleth.map((d) => ({ ...d, valor: Math.round((d.valor * 0.4 + 5) * 10) / 10 })),
-  pm25: baseChoropleth.map((d) => ({ ...d, valor: Math.round((d.valor * 0.8 + 15) * 10) / 10 })),
-  cobertura_edu: baseChoropleth.map((d) => ({ ...d, valor: Math.round((100 - d.valor * 0.3) * 10) / 10 })),
+type CityPulseSectionProps = {
+  serverChoroplethData?: Record<string, ChoroplethDatum[]>;
 };
 
-export function CityPulseSection() {
+export function CityPulseSection({ serverChoroplethData }: CityPulseSectionProps) {
   const [selectedIndicator, setSelectedIndicator] = useState("homicidios");
   const [hoveredComuna, setHoveredComuna] = useState<ChoroplethDatum | null>(null);
 
-  const data = mockChoropleth[selectedIndicator] || [];
+  // Use server data if available, fall back to mock transformations
+  const choroplethMap = serverChoroplethData ?? {
+    homicidios: fallbackChoropleth,
+    desempleo: fallbackChoropleth.map((d) => ({ ...d, valor: Math.round((d.valor * 0.4 + 5) * 10) / 10 })),
+    pm25: fallbackChoropleth.map((d) => ({ ...d, valor: Math.round((d.valor * 0.8 + 15) * 10) / 10 })),
+    cobertura_edu: fallbackChoropleth.map((d) => ({ ...d, valor: Math.round((100 - d.valor * 0.3) * 10) / 10 })),
+  };
+
+  const data = choroplethMap[selectedIndicator] || [];
   const values = data.map((d) => d.valor);
   const min = Math.min(...values);
   const max = Math.max(...values);

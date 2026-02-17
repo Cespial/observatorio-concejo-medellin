@@ -183,6 +183,35 @@ export async function getCategoriaId(nombre: string): Promise<string | null> {
   return categoriaCache.get(nombre) ?? null;
 }
 
+// ── Fuente Datos Lookup Cache ────────────────────────────────
+
+let fuenteCache: Map<string, string> | null = null;
+
+export async function getFuenteDatosId(nombre: string): Promise<string | null> {
+  if (!fuenteCache) {
+    const { data } = await supabaseAdmin
+      .from("fuentes_datos")
+      .select("id, nombre");
+    fuenteCache = new Map();
+    for (const f of data ?? []) {
+      fuenteCache.set(f.nombre, f.id);
+    }
+  }
+
+  // Exact match
+  if (fuenteCache.has(nombre)) return fuenteCache.get(nombre)!;
+
+  // Partial match: check if any key contains or is contained by the name
+  for (const [key, id] of fuenteCache.entries()) {
+    if (nombre.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(nombre.toLowerCase().slice(0, 20))) {
+      return id;
+    }
+  }
+
+  return null;
+}
+
 // ── Comision Lookup Cache ────────────────────────────────────
 
 let comisionCache: Map<string, string> | null = null;

@@ -4,6 +4,8 @@ import { loadHomicidios } from "./homicidios";
 import { loadHurtos } from "./hurtos";
 import { loadViolenciaIntrafamiliar } from "./violencia-intrafamiliar";
 import { loadLesionesPersonales } from "./lesiones-personales";
+import { loadExtorsion } from "./extorsion";
+import { loadDelitosSexuales } from "./delitos-sexuales";
 
 async function main() {
   const elapsed = startTimer();
@@ -17,6 +19,8 @@ async function main() {
     { name: "Hurtos", fn: loadHurtos },
     { name: "Violencia Intrafamiliar", fn: loadViolenciaIntrafamiliar },
     { name: "Lesiones Personales", fn: loadLesionesPersonales },
+    { name: "Extorsion", fn: loadExtorsion },
+    { name: "Delitos Sexuales", fn: loadDelitosSexuales },
   ];
 
   for (const loader of loaders) {

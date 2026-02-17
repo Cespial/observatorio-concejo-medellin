@@ -221,16 +221,135 @@ export async function getTerritorialComparison(
   }
 }
 
+// ── Area Breakdown (stacked by indicator per year) ──────────
+
+export async function getAreaBreakdown(
+  lineaSlug: string
+): Promise<{ areaBreakdown: TimeSeriesRow[]; areaBreakdownKeys: { key: string; name: string; color?: string }[] }> {
+  const fallback = () => {
+    const mock = getMockDataBySlug(lineaSlug);
+    return { areaBreakdown: mock?.areaBreakdown ?? [], areaBreakdownKeys: mock?.areaBreakdownKeys ?? [] };
+  };
+
+  try {
+    const supabase = createClient();
+
+    const { data: lineaRaw } = await (supabase
+      .from("lineas_tematicas")
+      .select("id")
+      .eq("slug", lineaSlug)
+      .single() as unknown as Promise<{ data: DbRow | null }>);
+
+    if (!lineaRaw) return fallback();
+
+    const { data: indicadoresRaw } = await (supabase
+      .from("indicadores")
+      .select("id, nombre, slug")
+      .eq("linea_tematica_id", lineaRaw.id as string)
+      .eq("activo", true)
+      .order("nombre")
+      .limit(6) as unknown as Promise<{ data: DbRow[] | null }>);
+
+    if (!indicadoresRaw?.length) return fallback();
+
+    const { data: mdeRaw } = await (supabase
+      .from("territorios")
+      .select("id")
+      .eq("codigo", "MDE")
+      .single() as unknown as Promise<{ data: DbRow | null }>);
+
+    if (!mdeRaw) return fallback();
+
+    const colors = ["#DC2626", "#F97316", "#A855F7", "#EAB308", "#06B6D4", "#16A34A"];
+    const areaBreakdownKeys = indicadoresRaw.map((ind, i) => ({
+      key: String(ind.slug),
+      name: String(ind.nombre),
+      color: colors[i % colors.length],
+    }));
+
+    const yearMap = new Map<number, Record<string, number>>();
+
+    for (const ind of indicadoresRaw) {
+      const { data: seriesRaw } = await (supabase
+        .from("datos_indicador")
+        .select("valor, periodo")
+        .eq("indicador_id", ind.id as string)
+        .eq("territorio_id", mdeRaw.id as string)
+        .order("periodo", { ascending: true }) as unknown as Promise<{ data: DbRow[] | null }>);
+
+      for (const row of seriesRaw ?? []) {
+        const year = Number(row.periodo);
+        if (!yearMap.has(year)) yearMap.set(year, {});
+        yearMap.get(year)![String(ind.slug)] = Number(row.valor);
+      }
+    }
+
+    const areaBreakdown: TimeSeriesRow[] = Array.from(yearMap.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([year, vals]) => ({ year, ...vals }));
+
+    return {
+      areaBreakdown: areaBreakdown.length > 0 ? areaBreakdown : fallback().areaBreakdown,
+      areaBreakdownKeys: areaBreakdown.length > 0 ? areaBreakdownKeys : fallback().areaBreakdownKeys,
+    };
+  } catch {
+    return fallback();
+  }
+}
+
+// ── Related Initiatives ─────────────────────────────────────
+
+export async function getRelatedInitiatives(lineaSlug: string) {
+  try {
+    const supabase = createClient();
+
+    const { data: lineaRaw } = await (supabase
+      .from("lineas_tematicas")
+      .select("id")
+      .eq("slug", lineaSlug)
+      .single() as unknown as Promise<{ data: DbRow | null }>);
+
+    if (!lineaRaw) return getMockDataBySlug(lineaSlug)?.relatedInitiatives ?? [];
+
+    const { data: iniciativasRaw } = await (supabase
+      .from("iniciativas")
+      .select("id, titulo, tipo, estado, fecha_radicacion")
+      .eq("linea_tematica_id", lineaRaw.id as string)
+      .order("fecha_radicacion", { ascending: false })
+      .limit(5) as unknown as Promise<{ data: DbRow[] | null }>);
+
+    if (!iniciativasRaw?.length) return getMockDataBySlug(lineaSlug)?.relatedInitiatives ?? [];
+
+    return iniciativasRaw.map((ini) => ({
+      id: String(ini.id),
+      titulo: String(ini.titulo),
+      tipo: String(ini.tipo),
+      estado: String(ini.estado),
+      fecha: String(ini.fecha_radicacion),
+    }));
+  } catch {
+    return getMockDataBySlug(lineaSlug)?.relatedInitiatives ?? [];
+  }
+}
+
 // ── Full thematic data ───────────────────────────────────────
 
 export async function getThematicData(lineaSlug: string): Promise<ThematicMockData | undefined> {
   const mock = getMockDataBySlug(lineaSlug);
   if (!mock) return undefined;
 
-  const [kpis, { timeSeries, timeSeriesKeys }, comunaComparison] = await Promise.all([
+  const [
+    kpis,
+    { timeSeries, timeSeriesKeys },
+    comunaComparison,
+    { areaBreakdown, areaBreakdownKeys },
+    relatedInitiatives,
+  ] = await Promise.all([
     getKPIsByLinea(lineaSlug),
     getTimeSeriesByLinea(lineaSlug),
     getTerritorialComparison(lineaSlug),
+    getAreaBreakdown(lineaSlug),
+    getRelatedInitiatives(lineaSlug),
   ]);
 
   return {
@@ -239,5 +358,8 @@ export async function getThematicData(lineaSlug: string): Promise<ThematicMockDa
     timeSeries: timeSeries.length > 0 ? timeSeries : mock.timeSeries,
     timeSeriesKeys: timeSeriesKeys.length > 0 ? timeSeriesKeys : mock.timeSeriesKeys,
     comunaComparison: comunaComparison.length > 0 ? comunaComparison : mock.comunaComparison,
+    areaBreakdown: areaBreakdown.length > 0 ? areaBreakdown : mock.areaBreakdown,
+    areaBreakdownKeys: areaBreakdownKeys.length > 0 ? areaBreakdownKeys : mock.areaBreakdownKeys,
+    relatedInitiatives: relatedInitiatives.length > 0 ? relatedInitiatives : mock.relatedInitiatives,
   };
 }
