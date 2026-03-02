@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Bot } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageBubble } from "./message-bubble";
 import { TypingIndicator } from "./typing-indicator";
 
@@ -19,9 +18,34 @@ type ChatMessagesProps = {
 
 export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(messages.length);
+  const userScrolledUpRef = useRef(false);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    userScrolledUpRef.current = !nearBottom;
+  }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  useEffect(() => {
+    const isNewMessage = messages.length !== prevMessageCountRef.current;
+    prevMessageCountRef.current = messages.length;
+
+    if (isNewMessage) {
+      userScrolledUpRef.current = false;
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else if (!userScrolledUpRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, isLoading]);
 
   if (messages.length === 0 && !isLoading) {
@@ -42,7 +66,10 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   }
 
   return (
-    <ScrollArea className="flex-1">
+    <div
+      ref={scrollContainerRef}
+      className="flex-1 overflow-y-auto"
+    >
       <div className="flex flex-col gap-1 py-4">
         {messages.map((message) => (
           <MessageBubble
@@ -54,6 +81,6 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
         {isLoading && <TypingIndicator />}
         <div ref={bottomRef} />
       </div>
-    </ScrollArea>
+    </div>
   );
 }
