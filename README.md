@@ -2,6 +2,11 @@
 
 Plataforma civica de datos abiertos para el Concejo de Medellin. Agrega, visualiza y analiza datos publicos de 6 lineas tematicas, rastrea iniciativas legislativas de los 21 concejales (periodo 2024-2027) y ofrece desgloses territoriales por comunas y corregimientos.
 
+[![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
+[![Mapbox](https://img.shields.io/badge/Mapbox_GL-000?logo=mapbox&logoColor=white)](https://www.mapbox.com)
+
 **Live:** [observatorio-concejo-medellin.vercel.app](https://observatorio-concejo-medellin.vercel.app)
 
 ## Funcionalidades
